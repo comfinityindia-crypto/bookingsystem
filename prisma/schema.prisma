@@ -1,0 +1,365 @@
+// ARMI — Prisma Schema
+// Multi-tenant ready from day one
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────────────────────
+// MULTI-TENANCY
+// ─────────────────────────────────────────
+
+model Tenant {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique // e.g. "comfinity"
+  logoUrl     String?
+  brandColor  String?  @default("#0066FF")
+  settings    Json?    @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users        User[]
+  employees    Employee[]
+  meetingTypes MeetingType[]
+  visitors     Visitor[]
+  bookings     Booking[]
+  followUps    FollowUp[]
+  auditLogs    AuditLog[]
+
+  @@map("tenants")
+}
+
+// ─────────────────────────────────────────
+// USERS (Admin panel access)
+// ─────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  tenantId     String
+  name         String
+  email        String
+  passwordHash String
+  role         UserRole @default(ADMIN)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  auditLogs AuditLog[]
+
+  @@unique([tenantId, email])
+  @@map("users")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  EMPLOYEE
+}
+
+// ─────────────────────────────────────────
+// EMPLOYEES (Bookable team members)
+// ─────────────────────────────────────────
+
+model Employee {
+  id           String  @id @default(cuid())
+  tenantId     String
+  name         String
+  slug         String  // e.g. "sooraj"
+  email        String
+  designation  String
+  bio          String?
+  expertiseTags String[] @default([])
+  photoUrl     String?
+  linkedinUrl  String?
+  timezone     String  @default("Asia/Kolkata")
+
+  // Google Calendar
+  googleCalendarEmail          String?
+  googleCalendarTokenEncrypted String?
+  googleCalendarConnected      Boolean @default(false)
+
+  // Availability settings
+  dailyMeetingLimit Int     @default(5)
+  bufferMinutes     Int     @default(15)
+  vacationMode      Boolean @default(false)
+  vacationStart     DateTime?
+  vacationEnd       DateTime?
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant            Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  availability      EmployeeAvailability[]
+  holidays          EmployeeHoliday[]
+  meetingTypeLinks  MeetingTypeEmployee[]
+  bookings          Booking[]
+
+  @@unique([tenantId, slug])
+  @@map("employees")
+}
+
+model EmployeeAvailability {
+  id          String  @id @default(cuid())
+  employeeId  String
+  dayOfWeek   Int     // 0=Sun, 1=Mon, ... 6=Sat
+  startTime   String  // "09:00"
+  endTime     String  // "18:00"
+  isAvailable Boolean @default(true)
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, dayOfWeek])
+  @@map("employee_availability")
+}
+
+model EmployeeHoliday {
+  id         String   @id @default(cuid())
+  employeeId String
+  date       DateTime
+  reason     String?
+  createdAt  DateTime @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("employee_holidays")
+}
+
+// ─────────────────────────────────────────
+// MEETING TYPES
+// ─────────────────────────────────────────
+
+model MeetingType {
+  id              String  @id @default(cuid())
+  tenantId        String
+  name            String
+  slug            String
+  description     String?
+  emoji           String? @default("📅")
+  durationMinutes Int     @default(30)
+  bufferBefore    Int     @default(0)
+  bufferAfter     Int     @default(15)
+  aiQuestionSet   Json?   @default("[]") // Array of question prompts
+  isActive        Boolean @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant    Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employees MeetingTypeEmployee[]
+  bookings  Booking[]
+
+  @@unique([tenantId, slug])
+  @@map("meeting_types")
+}
+
+model MeetingTypeEmployee {
+  meetingTypeId String
+  employeeId    String
+
+  meetingType MeetingType @relation(fields: [meetingTypeId], references: [id], onDelete: Cascade)
+  employee    Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@id([meetingTypeId, employeeId])
+  @@map("meeting_type_employees")
+}
+
+// ─────────────────────────────────────────
+// VISITORS (External prospects/clients)
+// ─────────────────────────────────────────
+
+model Visitor {
+  id               String   @id @default(cuid())
+  tenantId         String
+  name             String
+  email            String
+  company          String?
+  phone            String?
+  leadTemperature  LeadTemperature @default(COLD)
+  primaryIntent    String?
+  firstMeetingAt   DateTime?
+  lastMeetingAt    DateTime?
+  totalMeetings    Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  bookings  Booking[]
+  followUps FollowUp[]
+
+  @@unique([tenantId, email])
+  @@map("visitors")
+}
+
+enum LeadTemperature {
+  HOT
+  WARM
+  COLD
+}
+
+// ─────────────────────────────────────────
+// BOOKINGS (The core entity)
+// ─────────────────────────────────────────
+
+model Booking {
+  id              String        @id @default(cuid())
+  tenantId        String
+  employeeId      String
+  visitorId       String
+  meetingTypeId   String
+  scheduledAt     DateTime
+  durationMinutes Int
+  timezone        String        @default("Asia/Kolkata")
+  googleEventId   String?
+  googleMeetUrl   String?
+  status          BookingStatus @default(UPCOMING)
+  cancellationToken String?     @unique
+  rescheduleToken   String?     @unique
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employee    Employee    @relation(fields: [employeeId], references: [id])
+  visitor     Visitor     @relation(fields: [visitorId], references: [id])
+  meetingType MeetingType @relation(fields: [meetingTypeId], references: [id])
+  answers     BookingAnswer[]
+  aiBrief     AiBrief?
+  aiNotes     AiNotes?
+  followUps   FollowUp[]
+  review      Review?
+
+  @@map("bookings")
+}
+
+enum BookingStatus {
+  UPCOMING
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+  RESCHEDULED
+}
+
+model BookingAnswer {
+  id        String @id @default(cuid())
+  bookingId String
+  question  String
+  answer    String
+  sequence  Int
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("booking_answers")
+}
+
+// ─────────────────────────────────────────
+// AI OUTPUTS
+// ─────────────────────────────────────────
+
+model AiBrief {
+  id                    String  @id @default(cuid())
+  bookingId             String  @unique
+  meetingObjective      String?
+  discussionPoints      Json?   @default("[]")
+  intent                String?
+  urgency               String? // High | Medium | Low
+  leadTemperature       String? // Hot | Warm | Cold
+  opportunityEstimate   String?
+  suggestedQuestions    Json?   @default("[]")
+  generatedAt           DateTime @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("ai_briefs")
+}
+
+model AiNotes {
+  id                   String   @id @default(cuid())
+  bookingId            String   @unique
+  summary              String?
+  discussionPoints     Json?    @default("[]")
+  decisions            Json?    @default("[]")
+  actionItems          Json?    @default("[]")
+  recommendedNextStep  String?
+  updatedLeadTemp      String?
+  updatedIntent        String?
+  sentToVisitorAt      DateTime?
+  generatedAt          DateTime @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("ai_notes")
+}
+
+// ─────────────────────────────────────────
+// FOLLOW-UPS
+// ─────────────────────────────────────────
+
+model FollowUp {
+  id                  String         @id @default(cuid())
+  tenantId            String
+  visitorId           String
+  bookingId           String?
+  triggerReason       String?
+  daysSinceLastContact Int?
+  draftedEmail        String?
+  status              FollowUpStatus @default(PENDING)
+  createdAt           DateTime       @default(now())
+  actedAt             DateTime?
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  visitor  Visitor  @relation(fields: [visitorId], references: [id])
+  booking  Booking? @relation(fields: [bookingId], references: [id])
+
+  @@map("follow_ups")
+}
+
+enum FollowUpStatus {
+  PENDING
+  DISMISSED
+  SENT
+}
+
+// ─────────────────────────────────────────
+// REVIEWS
+// ─────────────────────────────────────────
+
+model Review {
+  id               String   @id @default(cuid())
+  bookingId        String   @unique
+  visitorId        String
+  rating           Int      // 1–5
+  positiveComment  String?
+  negativeFeedback String?
+  sharedPublicly   Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+// ─────────────────────────────────────────
+// AUDIT LOGS
+// ─────────────────────────────────────────
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  tenantId   String
+  userId     String?
+  action     String
+  entityType String?
+  entityId   String?
+  changes    Json?
+  createdAt  DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User?  @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
