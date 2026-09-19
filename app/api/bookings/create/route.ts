@@ -50,7 +50,10 @@ export async function POST(request: NextRequest) {
 
     let bookingId = "";
     let employeeName = "Team Member";
-    let employeeEmail = `${data.employeeSlug}@comfinity.com`;
+    let employeeEmail =
+      data.employeeSlug === "sooraj"
+        ? "comfinityindia@gmail.com"
+        : `${data.employeeSlug}@comfinity.com`;
     let employeeDesignation = "Representative";
     let meetingTypeName = "Meeting";
     let durationMinutes = 30;

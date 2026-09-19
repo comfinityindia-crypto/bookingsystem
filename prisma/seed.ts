@@ -105,12 +105,12 @@ async function main() {
   // ── Employees ────────────────────────────────────────────────────────
   const sooraj = await prisma.employee.upsert({
     where: { tenantId_slug: { tenantId: tenant.id, slug: "sooraj" } },
-    update: {},
+    update: { email: "comfinityindia@gmail.com" },
     create: {
       tenantId: tenant.id,
       name: "Sooraj Sudevan",
       slug: "sooraj",
-      email: "sooraj@comfinity.com",
+      email: "comfinityindia@gmail.com",
       designation: "Co-Founder",
       bio: "Technology entrepreneur focused on business problem solving, AI, automation and building practical technology solutions.",
       expertiseTags: ["AI", "Business Strategy", "Technology", "Partnerships"],

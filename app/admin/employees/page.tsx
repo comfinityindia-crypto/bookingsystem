@@ -8,7 +8,7 @@ const SEED_EMPLOYEES = [
     id: "seed-1",
     slug: "sooraj",
     name: "Sooraj Sudevan",
-    email: "sooraj@comfinity.com",
+    email: "comfinityindia@gmail.com",
     designation: "Co-Founder",
     timezone: "Asia/Kolkata",
     dailyMeetingLimit: 5,
