@@ -10,11 +10,9 @@ import {
   addMinutes,
   isBefore,
   isAfter,
-  isEqual,
-  parseISO,
   getDay,
 } from "date-fns";
-import { utcToZonedTime, zonedTimeToUtc } from "date-fns-tz";
+import { toZonedTime, fromZonedTime } from "date-fns-tz";
 
 export interface BusySlot {
   start: Date;
@@ -69,7 +67,7 @@ export function computeAvailableSlots(
   }
 
   // 2. Get employee's local date
-  const employeeLocalDate = utcToZonedTime(date, config.timezone);
+  const employeeLocalDate = toZonedTime(date, config.timezone);
   const dow = getDay(employeeLocalDate);
 
   // 3. Check working hours for this day
@@ -80,7 +78,7 @@ export function computeAvailableSlots(
 
   // 4. Check holidays
   const isHoliday = config.holidays.some((h) => {
-    const hLocal = utcToZonedTime(h, config.timezone);
+    const hLocal = toZonedTime(h, config.timezone);
     return (
       hLocal.getFullYear() === employeeLocalDate.getFullYear() &&
       hLocal.getMonth() === employeeLocalDate.getMonth() &&
@@ -99,7 +97,7 @@ export function computeAvailableSlots(
   const employeeDay = new Date(employeeLocalDate);
   employeeDay.setHours(0, 0, 0, 0);
 
-  const workStart = zonedTimeToUtc(
+  const workStart = fromZonedTime(
     new Date(
       employeeLocalDate.getFullYear(),
       employeeLocalDate.getMonth(),
@@ -110,7 +108,7 @@ export function computeAvailableSlots(
     ),
     config.timezone
   );
-  const workEnd = zonedTimeToUtc(
+  const workEnd = fromZonedTime(
     new Date(
       employeeLocalDate.getFullYear(),
       employeeLocalDate.getMonth(),
@@ -139,10 +137,6 @@ export function computeAvailableSlots(
     });
 
     if (!overlaps) {
-      // Convert to visitor's timezone for display
-      const startInVisitorTz = utcToZonedTime(cursor, visitorTimezone);
-      const endInVisitorTz = utcToZonedTime(slotEnd, visitorTimezone);
-
       const formatter = new Intl.DateTimeFormat("en-US", {
         timeZone: visitorTimezone,
         hour: "numeric",

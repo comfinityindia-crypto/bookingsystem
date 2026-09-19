@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { format, utcToZonedTime } from "date-fns-tz";
+import { format, toZonedTime } from "date-fns-tz";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -15,7 +15,7 @@ export function formatInTimezone(
   timezone: string,
   formatStr: string = "d MMM yyyy, h:mm a zzz"
 ): string {
-  const zoned = utcToZonedTime(date, timezone);
+  const zoned = toZonedTime(date, timezone);
   return format(zoned, formatStr, { timeZone: timezone });
 }
 
