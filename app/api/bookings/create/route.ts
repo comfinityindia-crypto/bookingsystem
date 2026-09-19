@@ -150,13 +150,9 @@ export async function POST(request: NextRequest) {
       bookingId = `demo-${Date.now()}`;
       const nameMap: Record<string, string> = {
         sooraj: "Sooraj Sudevan",
-        anoop: "Anoop",
-        sarah: "Sarah",
       };
       const desigMap: Record<string, string> = {
         sooraj: "Co-Founder",
-        anoop: "Head of Technology",
-        sarah: "Business Development",
       };
       const typeMap: Record<string, string> = {
         "coffee-chat": "Virtual Coffee Chat",

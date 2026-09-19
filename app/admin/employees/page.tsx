@@ -17,32 +17,6 @@ const SEED_EMPLOYEES = [
     googleCalendarEmail: null,
     isActive: true,
   },
-  {
-    id: "seed-2",
-    slug: "anoop",
-    name: "Anoop",
-    email: "anoop@comfinity.com",
-    designation: "Head of Technology",
-    timezone: "Asia/Kolkata",
-    dailyMeetingLimit: 4,
-    bufferMinutes: 15,
-    googleCalendarConnected: false,
-    googleCalendarEmail: null,
-    isActive: true,
-  },
-  {
-    id: "seed-3",
-    slug: "sarah",
-    name: "Sarah",
-    email: "sarah@comfinity.com",
-    designation: "Business Development",
-    timezone: "Asia/Kolkata",
-    dailyMeetingLimit: 5,
-    bufferMinutes: 15,
-    googleCalendarConnected: false,
-    googleCalendarEmail: null,
-    isActive: true,
-  },
 ];
 
 async function getEmployees() {

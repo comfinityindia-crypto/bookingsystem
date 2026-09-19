@@ -48,37 +48,6 @@ const SEED_DATA: Record<
       { id: "mt-3", slug: "partnership-discussion", name: "Partnership Discussion", emoji: "🤝", description: "Explore how we can work together and build something meaningful.", durationMinutes: 60 },
     ],
   },
-  anoop: {
-    employee: {
-      id: "seed-2",
-      slug: "anoop",
-      name: "Anoop",
-      designation: "Head of Technology",
-      bio: "Full-stack technology leader specialising in scalable architecture, cloud infrastructure and software delivery.",
-      expertiseTags: ["Engineering", "Cloud", "Architecture", "DevOps"],
-      photoUrl: null,
-    },
-    meetingTypes: [
-      { id: "mt-1", slug: "coffee-chat", name: "Virtual Coffee Chat", emoji: "☕", description: "A casual 30-minute conversation.", durationMinutes: 30 },
-      { id: "mt-4", slug: "tech-discussion", name: "Technology Discussion", emoji: "⚡", description: "Deep dive into technical requirements, architecture, and solutions.", durationMinutes: 60 },
-    ],
-  },
-  sarah: {
-    employee: {
-      id: "seed-3",
-      slug: "sarah",
-      name: "Sarah",
-      designation: "Business Development",
-      bio: "Partnerships and growth specialist helping businesses identify the right opportunities and build lasting commercial relationships.",
-      expertiseTags: ["Partnerships", "Growth", "Sales", "Strategy"],
-      photoUrl: null,
-    },
-    meetingTypes: [
-      { id: "mt-1", slug: "coffee-chat", name: "Virtual Coffee Chat", emoji: "☕", description: "A casual 30-minute conversation.", durationMinutes: 30 },
-      { id: "mt-2", slug: "business-discussion", name: "Business Discussion", emoji: "💡", description: "Discuss a specific business challenge or opportunity.", durationMinutes: 30 },
-      { id: "mt-3", slug: "partnership-discussion", name: "Partnership Discussion", emoji: "🤝", description: "Explore how we can work together.", durationMinutes: 60 },
-    ],
-  },
 };
 
 async function getEmployeeData(slug: string) {

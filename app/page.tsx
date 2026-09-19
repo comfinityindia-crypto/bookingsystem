@@ -32,26 +32,6 @@ const SEED_EMPLOYEES: EmployeeCard[] = [
     photoUrl: null,
     linkedinUrl: "https://linkedin.com",
   },
-  {
-    id: "seed-2",
-    slug: "anoop",
-    name: "Anoop",
-    designation: "Head of Technology",
-    bio: "Full-stack technology leader specialising in scalable architecture, cloud infrastructure and software delivery.",
-    expertiseTags: ["Engineering", "Cloud", "Architecture", "DevOps"],
-    photoUrl: null,
-    linkedinUrl: "https://linkedin.com",
-  },
-  {
-    id: "seed-3",
-    slug: "sarah",
-    name: "Sarah",
-    designation: "Business Development",
-    bio: "Partnerships and growth specialist helping businesses identify the right opportunities and build lasting commercial relationships.",
-    expertiseTags: ["Partnerships", "Growth", "Sales", "Strategy"],
-    photoUrl: null,
-    linkedinUrl: "https://linkedin.com",
-  },
 ];
 
 async function getEmployees() {
@@ -116,17 +96,23 @@ export default async function BookingLandingPage() {
           Available for conversations
         </div>
         <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
-          Book a conversation<br className="hidden sm:block" /> with our team
+          Book a conversation<br className="hidden sm:block" /> with {employees.length === 1 ? employees[0].name : "our team"}
         </h1>
         <p className="text-lg text-gray-500 max-w-2xl mx-auto">
           We build technology that solves real business problems — AI, automation, and digital platforms.
-          Choose who you'd like to speak with and pick a time that works for you.
+          Choose a conversation topic and pick a time that works for you.
         </p>
       </section>
 
       {/* ── Employee Cards ── */}
       <section className="max-w-5xl mx-auto px-6 pb-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          className={
+            employees.length === 1
+              ? "max-w-lg mx-auto"
+              : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          }
+        >
           {employees.map((employee) => (
             <EmployeeCard key={employee.id} employee={employee} />
           ))}

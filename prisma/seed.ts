@@ -132,93 +132,18 @@ async function main() {
     include: { availability: true },
   });
 
-  const anoop = await prisma.employee.upsert({
-    where: { tenantId_slug: { tenantId: tenant.id, slug: "anoop" } },
-    update: {},
-    create: {
-      tenantId: tenant.id,
-      name: "Anoop",
-      slug: "anoop",
-      email: "anoop@comfinity.com",
-      designation: "Head of Technology",
-      bio: "Full-stack technology leader specialising in scalable architecture, cloud infrastructure and software delivery.",
-      expertiseTags: ["Engineering", "Cloud", "Architecture", "DevOps"],
-      timezone: "Asia/Kolkata",
-      dailyMeetingLimit: 3,
-      bufferMinutes: 15,
-      isActive: true,
-      availability: {
-        create: [
-          { dayOfWeek: 1, startTime: "09:00", endTime: "18:00", isAvailable: true },
-          { dayOfWeek: 2, startTime: "09:00", endTime: "18:00", isAvailable: true },
-          { dayOfWeek: 3, startTime: "09:00", endTime: "18:00", isAvailable: true },
-          { dayOfWeek: 4, startTime: "09:00", endTime: "18:00", isAvailable: true },
-          { dayOfWeek: 5, startTime: "09:00", endTime: "18:00", isAvailable: true },
-        ],
-      },
-    },
-    include: { availability: true },
-  });
+  console.log("✅ Employee created:", sooraj.name);
 
-  const sarah = await prisma.employee.upsert({
-    where: { tenantId_slug: { tenantId: tenant.id, slug: "sarah" } },
-    update: {},
-    create: {
-      tenantId: tenant.id,
-      name: "Sarah",
-      slug: "sarah",
-      email: "sarah@comfinity.com",
-      designation: "Business Development",
-      bio: "Partnerships and growth specialist helping businesses identify the right opportunities and build lasting commercial relationships.",
-      expertiseTags: ["Partnerships", "Growth", "Sales", "Strategy"],
-      timezone: "Asia/Kolkata",
-      dailyMeetingLimit: 5,
-      bufferMinutes: 15,
-      isActive: true,
-      availability: {
-        create: [
-          { dayOfWeek: 1, startTime: "09:00", endTime: "18:00", isAvailable: true },
-          { dayOfWeek: 2, startTime: "09:00", endTime: "18:00", isAvailable: true },
-          { dayOfWeek: 3, startTime: "09:00", endTime: "18:00", isAvailable: true },
-          { dayOfWeek: 4, startTime: "09:00", endTime: "18:00", isAvailable: true },
-          { dayOfWeek: 5, startTime: "09:00", endTime: "18:00", isAvailable: true },
-        ],
-      },
-    },
-    include: { availability: true },
-  });
-
-  console.log("✅ Employees created:", [sooraj.name, anoop.name, sarah.name].join(", "));
-
-  // ── Link employees to meeting types ─────────────────────────────────
-  const coffeeChat = meetingTypes[0];
-  const bizDiscussion = meetingTypes[1];
-  const partnershipDiscussion = meetingTypes[2];
-
-  // All three employees can do coffee chat
-  for (const employee of [sooraj, anoop, sarah]) {
+  // ── Link employee to meeting types ──────────────────────────────────
+  for (const mt of meetingTypes) {
     await prisma.meetingTypeEmployee.upsert({
-      where: { meetingTypeId_employeeId: { meetingTypeId: coffeeChat.id, employeeId: employee.id } },
+      where: { meetingTypeId_employeeId: { meetingTypeId: mt.id, employeeId: sooraj.id } },
       update: {},
-      create: { meetingTypeId: coffeeChat.id, employeeId: employee.id },
+      create: { meetingTypeId: mt.id, employeeId: sooraj.id },
     });
   }
 
-  // Sooraj + Sarah for business/partnership
-  for (const employee of [sooraj, sarah]) {
-    await prisma.meetingTypeEmployee.upsert({
-      where: { meetingTypeId_employeeId: { meetingTypeId: bizDiscussion.id, employeeId: employee.id } },
-      update: {},
-      create: { meetingTypeId: bizDiscussion.id, employeeId: employee.id },
-    });
-    await prisma.meetingTypeEmployee.upsert({
-      where: { meetingTypeId_employeeId: { meetingTypeId: partnershipDiscussion.id, employeeId: employee.id } },
-      update: {},
-      create: { meetingTypeId: partnershipDiscussion.id, employeeId: employee.id },
-    });
-  }
-
-  console.log("✅ Meeting type assignments created");
+  console.log("✅ Meeting type assignments created for Sooraj");
   console.log("\n🎉 Seed complete! ARMI is ready for Comfinity.");
   console.log("   Admin login: admin@comfinity.com / armi-admin-2026");
 }
