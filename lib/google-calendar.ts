@@ -76,7 +76,7 @@ export function getGoogleAuthUrl(employeeId: string): string {
   return auth.generateAuthUrl({
     access_type: "offline",
     scope: SCOPES,
-    prompt: "consent",
+    prompt: "consent select_account",
     state: employeeId,
   });
 }
