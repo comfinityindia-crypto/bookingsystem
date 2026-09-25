@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      sendVisitorConfirmation({
+      await sendVisitorConfirmation({
         visitorName: visitor.name,
         visitorEmail: visitor.email,
         employeeName: booking.employee.name,

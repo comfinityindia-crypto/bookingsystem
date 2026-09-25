@@ -99,7 +99,7 @@ export async function POST(
       (a: any) => a.question === "Meeting Topic / Notes"
     );
 
-    sendVisitorConfirmation({
+    await sendVisitorConfirmation({
       visitorName: booking.visitor.name,
       visitorEmail: booking.visitor.email,
       employeeName: booking.employee.name,

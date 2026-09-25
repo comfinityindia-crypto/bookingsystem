@@ -12,6 +12,12 @@ function getResendClient() {
   return new Resend(apiKey);
 }
 
+// Resend returns failures instead of throwing; surface them so callers can log.
+async function send(resend: Resend, payload: Parameters<Resend["emails"]["send"]>[0]) {
+  const { error } = await resend.emails.send(payload);
+  if (error) throw new Error(`Resend: ${error.name} - ${error.message}`);
+}
+
 const FROM = `${process.env.RESEND_FROM_NAME || "Comfinity Team"} <${process.env.RESEND_FROM_EMAIL || "team@comfinityindia.com"}>`;
 
 export interface BookingEmailData {
@@ -43,7 +49,7 @@ export async function sendVisitorConfirmation(data: BookingEmailData) {
     return;
   }
 
-  await resend.emails.send({
+  await send(resend, {
     from: FROM,
     to: data.visitorEmail,
     subject: `Your meeting with ${data.employeeName} is confirmed ✅`,
@@ -122,7 +128,7 @@ export async function sendEmployeeNotification(data: EmployeeNotificationData) {
     return;
   }
 
-  await resend.emails.send({
+  await send(resend, {
     from: FROM,
     to: data.employeeEmail,
     subject: `New booking: ${data.visitorName}${data.visitorCompany ? ` (${data.visitorCompany})` : ""} — ${data.meetingType}`,
@@ -217,7 +223,7 @@ export async function sendMeetingNotes(params: {
     return;
   }
 
-  await resend.emails.send({
+  await send(resend, {
     from: FROM,
     to: params.visitorEmail,
     subject: `Meeting notes: Your conversation with ${params.employeeName}`,

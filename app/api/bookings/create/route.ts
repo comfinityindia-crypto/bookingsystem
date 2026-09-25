@@ -216,16 +216,16 @@ export async function POST(request: NextRequest) {
       appUrl,
     };
 
-    Promise.all([
-      sendVisitorConfirmation(emailData).catch((e) =>
-        console.error("Visitor email failed:", e)
-      ),
-      sendEmployeeNotification({
-        ...emailData,
-        visitorCompany: data.visitor.company || undefined,
-        visitorPhone: data.visitor.phone || undefined,
-      }).catch((e) => console.error("Employee email failed:", e)),
-    ]);
+    // Awaited so the serverless function isn't frozen before delivery.
+    // Employee first (Resend rate-limits bursts), then the visitor.
+    await sendEmployeeNotification({
+      ...emailData,
+      visitorCompany: data.visitor.company || undefined,
+      visitorPhone: data.visitor.phone || undefined,
+    }).catch((e) => console.error("Employee email failed:", e));
+    await sendVisitorConfirmation(emailData).catch((e) =>
+      console.error("Visitor email failed:", e)
+    );
 
     return NextResponse.json({
       bookingId,
