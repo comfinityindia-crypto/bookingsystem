@@ -92,7 +92,7 @@ export default async function ConfirmationPage({
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="border-b border-gray-100 bg-white">
-        <div className="max-w-2xl mx-auto px-6 py-4 flex items-center gap-2">
+        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center gap-2">
           <div className="w-6 h-6 rounded bg-blue-600 flex items-center justify-center">
             <span className="text-white font-bold text-xs">C</span>
           </div>
@@ -100,7 +100,7 @@ export default async function ConfirmationPage({
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-6 py-10">
+      <div className="max-w-3xl mx-auto px-6 py-10">
         {/* Success banner */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">

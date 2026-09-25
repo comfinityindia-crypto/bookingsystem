@@ -1,13 +1,12 @@
 /**
- * Employee Profile + Meeting Type Selection — Screen 2
+ * Employee Profile + Meeting Type Selection + Calendar — Screen 2+3
  * URL: /[employeeSlug]
  * e.g. /sooraj
  */
 
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
+import EmployeeBookingClient from "./EmployeeBookingClient";
 
 // Seed data for development
 const SEED_DATA: Record<
@@ -106,96 +105,12 @@ export default async function EmployeePage({
   if (!data) notFound();
 
   const { employee, meetingTypes } = data;
-  const initials = employee.name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* ── Header ── */}
-      <header className="border-b border-gray-100 bg-white">
-        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center gap-4">
-          <Link href="/" className="text-gray-400 hover:text-gray-600 transition-colors">
-            ← Back
-          </Link>
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-blue-600 flex items-center justify-center">
-              <span className="text-white font-bold text-xs">C</span>
-            </div>
-            <span className="font-semibold text-gray-900 text-sm">Comfinity</span>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-3xl mx-auto px-6 py-12">
-        {/* ── Employee Header ── */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-8 mb-6">
-          <div className="flex items-start gap-6">
-            {employee.photoUrl ? (
-              <Image
-                src={employee.photoUrl}
-                alt={employee.name}
-                width={80}
-                height={80}
-                className="w-20 h-20 rounded-full object-cover flex-shrink-0"
-              />
-            ) : (
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold text-2xl">{initials}</span>
-              </div>
-            )}
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{employee.name}</h1>
-              <p className="text-blue-600 font-medium mb-2">{employee.designation}</p>
-              <p className="text-gray-600 text-sm leading-relaxed mb-3">{employee.bio}</p>
-              <div className="flex flex-wrap gap-1.5">
-                {employee.expertiseTags?.map((tag) => (
-                  <span key={tag} className="text-xs bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full font-medium">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Meeting Type Selection ── */}
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Choose the type of conversation
-          </h2>
-          <div className="space-y-3">
-            {meetingTypes.map((mt) => (
-              <Link
-                key={mt.id}
-                href={`/${employeeSlug}/${mt.slug}`}
-                className="flex items-center gap-4 bg-white border border-gray-200 rounded-2xl p-5 hover:border-blue-300 hover:shadow-sm transition-all duration-200 group"
-              >
-                <div className="text-3xl flex-shrink-0">{mt.emoji || "📅"}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">
-                      {mt.name}
-                    </h3>
-                    <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full flex-shrink-0">
-                      {mt.durationMinutes} min
-                    </span>
-                  </div>
-                  {mt.description && (
-                    <p className="text-sm text-gray-500">{mt.description}</p>
-                  )}
-                </div>
-                <div className="text-gray-300 group-hover:text-blue-400 transition-colors flex-shrink-0">
-                  →
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+    <EmployeeBookingClient
+      employeeSlug={employeeSlug}
+      employee={employee}
+      meetingTypes={meetingTypes}
+    />
   );
 }

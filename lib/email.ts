@@ -12,7 +12,7 @@ function getResendClient() {
   return new Resend(apiKey);
 }
 
-const FROM = `${process.env.RESEND_FROM_NAME || "Comfinity Team"} <${process.env.RESEND_FROM_EMAIL || "team@comfinity.com"}>`;
+const FROM = `${process.env.RESEND_FROM_NAME || "Comfinity Team"} <${process.env.RESEND_FROM_EMAIL || "team@comfinityindia.com"}>`;
 
 export interface BookingEmailData {
   visitorName: string;

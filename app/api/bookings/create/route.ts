@@ -227,7 +227,13 @@ export async function POST(request: NextRequest) {
       }).catch((e) => console.error("Employee email failed:", e)),
     ]);
 
-    return NextResponse.json({ bookingId, success: true });
+    return NextResponse.json({
+      bookingId,
+      success: true,
+      googleMeetUrl,
+      cancellationToken,
+      rescheduleToken,
+    });
   } catch (error: any) {
     console.error("Booking creation error:", error);
     if (error instanceof z.ZodError) {
