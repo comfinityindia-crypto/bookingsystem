@@ -114,6 +114,7 @@ export async function sendVisitorConfirmation(data: BookingEmailData) {
 export interface EmployeeNotificationData extends BookingEmailData {
   visitorCompany?: string;
   visitorPhone?: string;
+  rescheduled?: boolean;
 }
 
 /**
@@ -131,7 +132,7 @@ export async function sendEmployeeNotification(data: EmployeeNotificationData) {
   await send(resend, {
     from: FROM,
     to: data.employeeEmail,
-    subject: `New booking: ${data.visitorName}${data.visitorCompany ? ` (${data.visitorCompany})` : ""} — ${data.meetingType}`,
+    subject: `${data.rescheduled ? "Rescheduled" : "New booking"}: ${data.visitorName}${data.visitorCompany ? ` (${data.visitorCompany})` : ""} — ${data.meetingType}`,
     html: `
 <!DOCTYPE html>
 <html>
@@ -140,7 +141,7 @@ export async function sendEmployeeNotification(data: EmployeeNotificationData) {
   <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
     
     <div style="background:#111;padding:28px 40px;">
-      <h1 style="color:#fff;margin:0;font-size:20px;">New Meeting Booked</h1>
+      <h1 style="color:#fff;margin:0;font-size:20px;">${data.rescheduled ? "Meeting Rescheduled" : "New Meeting Booked"}</h1>
       <p style="color:#aaa;margin:6px 0 0;font-size:14px;">Booking Notification</p>
     </div>
 

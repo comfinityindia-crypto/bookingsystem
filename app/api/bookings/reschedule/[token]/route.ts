@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { updateCalendarEvent } from "@/lib/google-calendar";
-import { sendVisitorConfirmation } from "@/lib/email";
+import { sendEmployeeNotification, sendVisitorConfirmation } from "@/lib/email";
 import { demoStore } from "@/lib/demo-store";
 import { z } from "zod";
 
@@ -99,7 +99,7 @@ export async function POST(
       (a: any) => a.question === "Meeting Topic / Notes"
     );
 
-    await sendVisitorConfirmation({
+    const emailData = {
       visitorName: booking.visitor.name,
       visitorEmail: booking.visitor.email,
       employeeName: booking.employee.name,
@@ -114,7 +114,15 @@ export async function POST(
       cancellationToken: booking.cancellationToken || "",
       rescheduleToken: booking.rescheduleToken || "",
       appUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-    }).catch((err) => console.error("Reschedule email failed:", err));
+    };
+    await sendEmployeeNotification({
+      ...emailData,
+      visitorCompany: booking.visitor.company || undefined,
+      rescheduled: true,
+    }).catch((err) => console.error("Employee reschedule email failed:", err));
+    await sendVisitorConfirmation(emailData).catch((err) =>
+      console.error("Reschedule email failed:", err)
+    );
 
     return NextResponse.json({
       success: true,
