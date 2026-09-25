@@ -74,6 +74,21 @@ export async function POST(request: NextRequest) {
       });
       if (!meetingType) throw new Error("Meeting type not found");
 
+      // Reject slots the team blocked after the visitor loaded the page
+      const blocked = await prisma.employeeBlockedTime.findFirst({
+        where: {
+          employeeId: employee.id,
+          start: { lt: new Date(data.slotEnd) },
+          end: { gt: new Date(data.slotStart) },
+        },
+      });
+      if (blocked) {
+        return NextResponse.json(
+          { error: "This time is no longer available. Please pick another slot." },
+          { status: 409 }
+        );
+      }
+
       employeeName = employee.name;
       employeeEmail = employee.email;
       employeeDesignation = employee.designation;

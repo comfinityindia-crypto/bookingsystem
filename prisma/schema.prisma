@@ -98,6 +98,7 @@ model Employee {
   tenant            Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   availability      EmployeeAvailability[]
   holidays          EmployeeHoliday[]
+  blockedTimes      EmployeeBlockedTime[]
   meetingTypeLinks  MeetingTypeEmployee[]
   bookings          Booking[]
 
@@ -129,6 +130,21 @@ model EmployeeHoliday {
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@map("employee_holidays")
+}
+
+// Specific time ranges the employee marks as unavailable from the admin panel
+model EmployeeBlockedTime {
+  id         String   @id @default(cuid())
+  employeeId String
+  start      DateTime
+  end        DateTime
+  reason     String?
+  createdAt  DateTime @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId, end])
+  @@map("employee_blocked_times")
 }
 
 // ─────────────────────────────────────────

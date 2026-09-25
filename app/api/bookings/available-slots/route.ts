@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { computeAvailableSlots, MOCK_BUSY_SLOTS } from "@/lib/slots";
 import { getFreeBusy } from "@/lib/google-calendar";
-import { startOfDay, endOfDay, addDays } from "date-fns";
+import { startOfDay, endOfDay, addDays, addMinutes } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 
 export async function GET(request: NextRequest) {
@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
       include: {
         availability: true,
         holidays: true,
+        blockedTimes: { where: { end: { gt: new Date() } } },
       },
     });
 
@@ -77,6 +78,16 @@ export async function GET(request: NextRequest) {
         busySlots = MOCK_BUSY_SLOTS;
       }
     }
+
+    // Admin-blocked times. The slot engine pads every busy range with the
+    // post-meeting buffer, so trim it here to block exactly what was marked.
+    busySlots = [
+      ...busySlots,
+      ...employee.blockedTimes.map((b) => ({
+        start: b.start,
+        end: addMinutes(b.end, -employee.bufferMinutes),
+      })),
+    ];
 
     const config = {
       timezone: employee.timezone,

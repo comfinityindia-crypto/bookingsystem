@@ -44,5 +44,6 @@ export const config = {
     "/admin/:path*",
     "/api/auth/google/connect",
     "/api/auth/google/disconnect",
+    "/api/admin/:path*",
   ],
 };

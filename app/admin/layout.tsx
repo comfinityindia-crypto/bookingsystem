@@ -45,6 +45,13 @@ export default function AdminLayout({
               <span>Employees & Calendar</span>
             </Link>
             <Link
+              href="/admin/blocked-time"
+              className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              <span>⛔</span>
+              <span>Blocked Time</span>
+            </Link>
+            <Link
               href="/admin/meeting-types"
               className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors"
             >

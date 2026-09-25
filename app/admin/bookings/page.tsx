@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { demoStore } from "@/lib/demo-store";
 import Link from "next/link";
+import { formatInTimeZone } from "date-fns-tz";
+import ChangeTimeButton from "./ChangeTimeButton";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +12,7 @@ async function getBookings() {
     dbBookings = await prisma.booking.findMany({
       orderBy: { scheduledAt: "desc" },
       include: {
-        employee: { select: { name: true, designation: true } },
+        employee: { select: { name: true, designation: true, timezone: true } },
         visitor: { select: { name: true, email: true, company: true, phone: true } },
         meetingType: { select: { name: true, emoji: true, durationMinutes: true } },
         answers: true,
@@ -97,23 +99,15 @@ export default async function AdminBookingsPage() {
                     RESCHEDULED: "bg-amber-50 text-amber-700",
                   };
                   const statusClass = statusMap[String(b.status)] || "bg-gray-100 text-gray-700";
+                  // Show times in the team member's timezone (the server runs in UTC)
+                  const tz = b.employee.timezone || "Asia/Kolkata";
 
                   return (
                     <tr key={b.id} className="hover:bg-gray-50/50 transition-colors">
                       <td className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">
-                        <div>
-                          {new Date(b.scheduledAt).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </div>
+                        <div>{formatInTimeZone(b.scheduledAt, tz, "MMM d, yyyy")}</div>
                         <div className="text-xs text-gray-400 font-normal">
-                          {new Date(b.scheduledAt).toLocaleTimeString("en-US", {
-                            hour: "numeric",
-                            minute: "2-digit",
-                          })}{" "}
-                          ({b.timezone})
+                          {formatInTimeZone(b.scheduledAt, tz, "h:mm a")} ({tz})
                         </div>
                       </td>
                       <td className="py-4 px-6">
@@ -145,7 +139,7 @@ export default async function AdminBookingsPage() {
                           {b.status}
                         </span>
                       </td>
-                      <td className="py-4 px-6 whitespace-nowrap">
+                      <td className="py-4 px-6 whitespace-nowrap space-y-2">
                         {b.googleMeetUrl ? (
                           <a
                             href={b.googleMeetUrl}
@@ -158,6 +152,15 @@ export default async function AdminBookingsPage() {
                           </a>
                         ) : (
                           <span className="text-xs text-gray-400">—</span>
+                        )}
+                        {b.status === "UPCOMING" && (
+                          <div>
+                            <ChangeTimeButton
+                              bookingId={b.id}
+                              currentLocal={formatInTimeZone(b.scheduledAt, tz, "yyyy-MM-dd'T'HH:mm")}
+                              timezone={tz}
+                            />
+                          </div>
                         )}
                       </td>
                     </tr>

@@ -35,6 +35,7 @@ export interface BookingEmailData {
   cancellationToken: string;
   rescheduleToken: string;
   appUrl: string;
+  previousScheduledAt?: Date; // set when the team changed the meeting time
 }
 
 /**
@@ -52,7 +53,9 @@ export async function sendVisitorConfirmation(data: BookingEmailData) {
   await send(resend, {
     from: FROM,
     to: data.visitorEmail,
-    subject: `Your meeting with ${data.employeeName} is confirmed ✅`,
+    subject: data.previousScheduledAt
+      ? `Your meeting time with ${data.employeeName} has changed 🕒`
+      : `Your meeting with ${data.employeeName} is confirmed ✅`,
     html: `
 <!DOCTYPE html>
 <html>
@@ -62,8 +65,8 @@ export async function sendVisitorConfirmation(data: BookingEmailData) {
     
     <!-- Header -->
     <div style="background:#0066FF;padding:32px 40px;text-align:center;">
-      <h1 style="color:#fff;margin:0;font-size:24px;font-weight:600;">Meeting Confirmed ✅</h1>
-      <p style="color:rgba(255,255,255,0.85);margin:8px 0 0;font-size:15px;">Your conversation with Comfinity is booked</p>
+      <h1 style="color:#fff;margin:0;font-size:24px;font-weight:600;">${data.previousScheduledAt ? "Meeting Time Changed 🕒" : "Meeting Confirmed ✅"}</h1>
+      <p style="color:rgba(255,255,255,0.85);margin:8px 0 0;font-size:15px;">${data.previousScheduledAt ? `${data.employeeName} has moved your meeting to a new time` : "Your conversation with Comfinity is booked"}</p>
     </div>
 
     <!-- Details -->
@@ -73,7 +76,13 @@ export async function sendVisitorConfirmation(data: BookingEmailData) {
             <td style="padding:10px 0;font-weight:600;border-bottom:1px solid #f0f0f0;">${data.employeeName}<br><span style="font-weight:400;color:#666;font-size:13px;">${data.employeeDesignation}</span></td></tr>
         <tr><td style="padding:10px 0;color:#666;font-size:14px;border-bottom:1px solid #f0f0f0;">Meeting type</td>
             <td style="padding:10px 0;border-bottom:1px solid #f0f0f0;">${data.meetingType}</td></tr>
-        <tr><td style="padding:10px 0;color:#666;font-size:14px;border-bottom:1px solid #f0f0f0;">Date & Time</td>
+        ${
+          data.previousScheduledAt
+            ? `<tr><td style="padding:10px 0;color:#666;font-size:14px;border-bottom:1px solid #f0f0f0;">Previous time</td>
+            <td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#999;text-decoration:line-through;">${formatDate(data.previousScheduledAt, data.timezone)}</td></tr>`
+            : ""
+        }
+        <tr><td style="padding:10px 0;color:#666;font-size:14px;border-bottom:1px solid #f0f0f0;">${data.previousScheduledAt ? "New time" : "Date & Time"}</td>
             <td style="padding:10px 0;border-bottom:1px solid #f0f0f0;font-weight:600;">${formattedDate}</td></tr>
         <tr><td style="padding:10px 0;color:#666;font-size:14px;">Duration</td>
             <td style="padding:10px 0;">${data.durationMinutes} minutes</td></tr>
